@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gato-Gotchi: Mi Mascota Virtual</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="contenedor-juego">
+        <h1>💖 Gato-Gotchi: ¿Me odia mi gato? 💖</h1>
+
+        <h2>Mi Gatito: <span id="nombre-gato">Cargando...</span></h2>
+
+        <div id="visualizacion-gato">
+            <div id="dialogo-gato" class="caja-dialogo"></div>
+            <img id="imagen-gato" src="">
+        </div>
+
+        <div id="aviso-entrada-nombre" class="caja-aviso" style="display: none;">
+            <p id="mensaje-aviso-nombre"></p>
+            <input type="text" id="nuevo-nombre-gato" placeholder="Escribe el nombre aquí..." maxlength="15">
+            <button onclick="iniciarJuegoConNombre()">Adoptar y Empezar</button>
+        </div>
+
+        <div id="aviso-fin-juego" class="caja-aviso" style="display: none;">
+            <p id="mensaje-fin-juego"></p>
+            <button onclick="mostrarEntradaNombre()">Intentar con un Nuevo Gato</button>
+        </div>
+
+        <div id="contenedor-estadisticas">
+            <h3>Estadísticas</h3>
+            <div class="grupo-estadistica">
+                <label>Estado (Salud/Felicidad):</label>
+                <progress id="progreso-estado" value="0" max="100"></progress>
+                <span id="valor-estado" class="valor-estadistica"></span>
+            </div>
+            <div class="grupo-estadistica">
+                <label>Relación (Amor/Odio):</label>
+                <progress id="progreso-amor-odio" value="0" max="200"></progress>
+                <span id="valor-amor-odio" class="valor-estadistica"></span>
+            </div>
+        </div>
+
+        <div id="botones-interaccion">
+            <h3>Interacciones</h3>
+            <div>
+                <button onclick="alimentar()">Alimentar 🍖</button>
+                <button onclick="acariciar()">Acariciar 🤗</button>
+                <button onclick="jugarConLaser()">Jugar Laser 🔴</button>
+                <button onclick="cepillarPelo()">Cepillar Pelo 💈</button>
+                <button onclick="lavar()">Lavar 🛁</button>
+                <button onclick="ignorar()">Ignorar 😴</button>
+                <button onclick="darMedicamento()">Dar Medicamento 💊</button>
+                <button onclick="asustar()">Asustar 👻</button>
+            </div>
+        </div>
+        
+        <hr>
+
+        <h3>🏆 Logros Desbloqueados</h3>
+        <div class="logros-marco">
+            <div class="gatoChino">
+                <p>Gato Chino</p>
+                <br/>
+                <p>Gatito de la suerte.</p>
+            </div>
+            <div class="gatoTeOdia">
+                <p>Tu gato te odia</p>
+                <br/>
+                <p>Gato odioso.</p>
+            </div>
+            <div class="gatoTeAma">
+                <p>Tu gato te ama</p>
+                <br/>
+                <p>Gato amoroso.</p>                
+            </div>
+            <div class="gatoTeAbandona">
+                <p>Tu gato te ha abandonado</p>
+                <br/>
+                <p>Y se marcho...</p>                
+            </div>
+            <div class="gatoAmoroso">
+                <p>¡Un gato amoroso!</p>
+                <br/>
+                <p>¡Que gato mas cariñoso!</p>
+            </div>
+            <div class="gatoAntipático">
+                <p>¡Un gato antipático!</p>
+                <br/>
+                <p>Este gato viene con cosas sin resolver...</p>
+            </div>
+            <div class="gatoRIP">
+                <p>R.I.P</p>
+                <br/>
+                <p>¡Has matado a Kenny!</p>
+            </div>
+            <div class="gatoBanana">
+                <p>Gato Platano.</p>
+                <br/>
+                <p>¿Es un gato o un platano?</p>
+            </div>
+            <div class="gatoSolidSnake">
+                <p>¡Es Solid Snake!</p>
+                <br/>
+                <p>Este no es mi gato.</p>
+            </div>
+            <div class="gatoHipocondriaco">
+                <p>Gato Hipocondriaco</p>
+                <br/>
+                <p>Gato Super Saludable.</p>
+            </div>
+            <div class="gatoIndigestion">
+                <p>Gato con indigestion</p>
+                <br/>
+                <p>Disgestión Agitada.</p>
+            </div>
+            <div class="gatoMisionSuicida">
+                <p>Mision Suicida</p>
+                <br/>
+                <p>Vivo de milagro.</p>
+            </div>
+            <div class="gatoCorazonHelado">
+                <p>Corazón de hielo</p>
+                <br/>
+                <p>Eres una persona horrible.</p>
+            </div>
+            <div class="gatoModoZen">
+                <p>Modo Zen</p>
+                <br/>
+                <p> ZzZzzZzz... </p>
+            </div>
+            <div class="gatoZombie">
+                <p>Gato Zombie</p>
+                <br/>
+                <p>¡Ha revivido!</p>
+            </div>
+            <div class="gatoDedosSangrientos">
+                <p>Dedos Sangrientos</p>
+                <br/>
+                <p>Lo acaricias, ¿pero a que costo?</p>
+            </div>
+            <div class="gatoAmorTrágico">
+                <p>Amor Trágico</p>
+                <br/>
+                <p>El amor mata.</p>
+            </div>
+            <div class="gatoRencorEterno">
+                <p>Rencor Eterno</p>
+                <br/>
+                <p>Su fantasma te perseguira para siempre.</p>
+            </div>
+            <div class="gatoPerli">
+                <p>¡Perli!</p>
+                <br/>
+                <p>¡Te has encontrado a Perli!</p>
+            </div>
+            <div class="gatoBollito">
+                <p>¡Bollito!</p>
+                <br/>
+                <p>¡Te has encontrado a Bollito!</p>
+            </div>
+                
+        </div>
+        <button id="resetLogros" onclick="resetearLogros()">Reiniciar los logros.</button>
+        <button id="botonAdoptar" onclick="nuevoNombreInput()">Adoptar Nuevo Gato</button>
+    </div>
+
+    <div id="notification-area"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

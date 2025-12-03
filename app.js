@@ -74,7 +74,7 @@ const emocionesComunes = {
     ignorar: "GatoIgnorado.gif",
     asustar: "GatoAsustado.gif",
     cepillar: "Peinado.gif",
-    baniar: "GatoBaniado.gif",
+    bañar: "GatoBañado.gif",
     acariciar: "GatoAcariciado.gif",
     caja: "GatoCaja.gif",
     laser: "GatoLaser.gif",
@@ -147,10 +147,10 @@ const ChatInteraccion = {
             { text: "*Saltos acrobáticos*", emotion: "feliz" }
         ]
     },
-    lavar: { // Nota: Corresponde a 'baniar' en emocionesComunes
+    lavar: { // Nota: Corresponde a 'bañar' en emocionesComunes
         general: [
             { text: "¡Odio el agua! 😡", emotion: "hate_max" },
-            { text: "*Siseo* ¡Esto no es divertido!", emotion: "baniar" },
+            { text: "*Siseo* ¡Esto no es divertido!", emotion: "bañar" },
             { text: "¡Salvadme de esta tortura!", emotion: "triste" },
             { text: "Al menos ahora estoy limpio... supongo.", emotion: "triste" }
         ]

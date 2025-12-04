@@ -2,18 +2,78 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Registro</title>
-    <link rel="stylesheet" href="/Proyecto1_Cliente/public/registrar.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro GatoGotchi</title>
+    <link rel="stylesheet" href="/registrar.css">
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    
+        <style>
+        /* Estilos extra para la lluvia de gatitos */
+        .spawned-cat {
+            position: absolute;
+            pointer-events: none;
+            font-size: 2rem;
+            z-index: 10000; /* Por encima de todo */
+            animation: floatUp 1s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) rotate(20deg) scale(1.5); opacity: 0; }
+        }
+    </style>
 </head>
 <body>
+
     <div class="login-card">
-        <h1>📝 Registro</h1>
+        <div class="avatar-container">
+            📝
+        </div>
+        <h1>Crear Cuenta</h1>
+        <p class="subtitle">¡Únete a la comunidad de GatoGotchi!</p>
+
         <form action="/registro" method="POST">
-            <input type="text" name="user" placeholder="Usuario nuevo" required>
-            <input type="password" name="pass" placeholder="Contraseña" required>
-            <button type="submit">Registrarse</button>
+            <div class="form-group">
+                <label>Elige tu Usuario</label>
+                <input type="text" name="user" placeholder="Ej: MichiMaster99" required>
+            </div>
+
+            <div class="form-group">
+                <label>Crea una Contraseña</label>
+                <input type="password" name="pass" placeholder="........" required>
+            </div>
+
+            <button type="submit" class="btn btn-login">Registrarse Ahora</button>
         </form>
-        <a href="/">Volver al Login</a>
+
+        <div class="separator">- o -</div>
+
+        <div class="register-link">
+            ¿Ya tienes cuenta? <a href="/">Iniciar Sesión</a>
+        </div>
     </div>
+
+    <script>
+        const emojis = ['📝', '✅', '😺', '✨', '🎉', '🐾', '💿'];
+
+        document.addEventListener('click', (e) => {
+            if(e.target.tagName === 'INPUT') return;
+
+            crearEfecto(e);
+        });
+
+        function crearEfecto(e) {
+            const el = document.createElement('div');
+            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            el.className = 'spawned-cat';
+            el.style.left = (e.pageX - 20) + 'px';
+            el.style.top = (e.pageY - 20) + 'px';
+            document.body.appendChild(el);
+
+            setTimeout(() => {
+                el.remove();
+            }, 1000);
+        }
+    </script>
 </body>
 </html>

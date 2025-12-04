@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>GatoGotchi</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* CSS Rápido para Logros */
+        .logro { display: inline-block; width: 80px; margin: 5px; text-align: center; opacity: 0.3; filter: grayscale(100%); }
+        .logro.desbloqueado { opacity: 1; filter: grayscale(0%); border: 2px solid gold; border-radius: 5px;}
+        .logro img { width: 50px; height: 50px; }
+        .botones-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .btn-accion { padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="contenedor-juego">
+
+    <% if (!gato) { %>
+        <div class="caja-aviso">
+            <h1>¡Bienvenido <%= user %>!</h1>
+            <p>No tienes gato. ¡Adopta uno ahora!</p>
+            <form action="/adoptar" method="POST">
+                <input type="text" name="nombre" placeholder="Nombre de tu gato..." required>
+                <button type="submit">🎲 Adoptar Gato Sorpresa</button>
+            </form>
+        </div>
+    <% } else { %>
+
+        <h1>💖 <%= gato.nombre %> 💖</h1>
+
+        <div id="visualizacion-gato">
+            <div id="dialogo-gato" class="caja-dialogo" style="background: white; padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 2px solid #333;">
+                <%= texto %>
+            </div>
+            
+            <img id="imagen-gato" src="/images/<%= imagen %>" style="max-height: 300px;">
+        </div>
+
+        <% if (!gato.vivo) { %>
+            <div style="background: #ffcccc; padding: 20px; margin: 20px 0;">
+                <h2>☠️ TU GATO HA MUERTO ☠️</h2>
+                <form action="/adoptar" method="POST">
+                    <input type="text" name="nombre" placeholder="Nombre del nuevo gato..." required>
+                    <button type="submit">Intentarlo de nuevo</button>
+                </form>
+            </div>
+        <% } else { %>
+            
+            <div id="contenedor-estadisticas">
+                <label>Salud: <%= gato.salud %>%</label>
+                <progress value="<%= gato.salud %>" max="100"></progress>
+                <br>
+                <label>Afecto: <%= gato.afecto %>/100</label>
+                <progress value="<%= gato.afecto %>" max="100"></progress>
+            </div>
+
+            <div class="botones-grid">
+                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="alimentar"><button class="btn-accion">🍖 Alimentar</button></form>
+                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="acariciar"><button class="btn-accion">🤗 Acariciar</button></form>
+                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="jugarConLaser"><button class="btn-accion">🔴 Laser</button></form>
+                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="lavar"><button class="btn-accion">🛁 Lavar</button></form>
+                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="cepillar"><button class="btn-accion">💈 Cepillar</button></form>
+                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="ignorar"><button class="btn-accion">😴 Ignorar</button></form>
+                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="darMedicamento"><button class="btn-accion">💊 Medicina</button></form>
+                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="asustar"><button class="btn-accion">👻 Asustar</button></form>
+                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="darCaja"><button class="btn-accion">📦 Caja</button></form>
+            </div>
+
+        <% } %>
+
+        <hr>
+        <h3>🏆 Logros</h3>
+        <div class="logros-container">
+            <% logros.forEach(function(l) { %>
+                <div class="logro <%= l.tiene ? 'desbloqueado' : '' %>" title="<%= l.descripcion %>">
+                    <img src="/images/logros/medalla.png" alt="Logro">
+                    <p style="font-size: 10px;"><%= l.titulo %></p>
+                </div>
+            <% }); %>
+        </div>
+
+    <% } %>
+
+</div>
+
+</body>
+</html>

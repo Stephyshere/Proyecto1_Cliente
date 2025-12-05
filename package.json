@@ -1,0 +1,27 @@
+{
+  "name": "proyecto1_cliente",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Stephyshere/Proyecto1_Cliente.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Stephyshere/Proyecto1_Cliente/issues"
+  },
+  "homepage": "https://github.com/Stephyshere/Proyecto1_Cliente#readme",
+  "description": "",
+  "dependencies": {
+    "body-parser": "^2.2.1",
+    "ejs": "^3.1.10",
+    "express": "^5.2.1",
+    "express-session": "^1.18.2",
+    "mysql2": "^3.15.3"
+  }
+}

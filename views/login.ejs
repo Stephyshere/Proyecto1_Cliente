@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login GatoGotchi</title>
+    <link rel="stylesheet" href="/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Estilos extra para la lluvia de gatitos */
+        .spawned-cat {
+            position: absolute;
+            pointer-events: none;
+            font-size: 2rem;
+            z-index: 10000; /* Por encima de todo */
+            animation: floatUp 1s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) rotate(20deg) scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="avatar-container">
+            🐱
+        </div>
+        <h1>GatoGotchi</h1>
+        <p class="subtitle">¡Bienvenido de nuevo, humano!</p>
+
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <label>Usuario</label>
+                <input type="text" name="user" placeholder="Tu nombre..." required>
+            </div>
+
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" name="pass" placeholder="........" required>
+            </div>
+
+            <button type="submit" class="btn btn-login">Iniciar Sesión</button>
+        </form>
+
+        <div class="separator">- o -</div>
+
+        <button class="btn btn-guest" onclick="crearEfecto(event)">Acceso Rápido</button>
+
+        <div class="register-link">
+            ¿No tienes cuenta? <a href="/registro">Registrarse</a>
+        </div>
+    </div>
+
+    <script>
+        const emojis = ['🐱', '😸', '😹', '😻', '😼', '🧶', '🐟', '🐾', '🥛', '🐭', '💖'];
+
+        document.addEventListener('click', (e) => {
+            if(e.target.tagName === 'INPUT') return;
+
+            crearEfecto(e);
+        });
+
+        function crearEfecto(e) {
+
+            const el = document.createElement('div');
+            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            el.className = 'spawned-cat';
+
+            el.style.left = (e.pageX - 20) + 'px';
+            el.style.top = (e.pageY - 20) + 'px';
+
+            document.body.appendChild(el);
+
+            setTimeout(() => {
+                el.remove();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

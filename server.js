@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(session({
-    secret: 'secreto_super_seguro',
+    secret: 'gato_secreto_super_seguro',
     resave: false,
     saveUninitialized: false
 }));
@@ -21,264 +21,284 @@ app.use(session({
 // --- CONEXIÓN BD ---
 const db = mysql.createConnection({
     host: 'localhost',
-    user: 'root',      // CAMBIA ESTO SI TIENES CONTRASEÑA
-    password: 'root',      
+    user: 'root',      
+    password: '', // <--- TU CONTRASEÑA
     database: 'gatogotchi'
 });
 
 db.connect(err => {
-    if (err) console.error("❌ Error BD:", err);
+    if (err) console.error("❌ Error conectando a BD:", err);
     else console.log("✅ Base de datos conectada");
 });
 
-// --- DATOS GLOBALES (MIGRADOS DE TU JS) ---
-// Define qué imágenes corresponden a cada ID
-const TIPOS_GATO = {
-    "01": { name: "Gato Chino", img: "gatos/GatoChino.png" },
-    "02": { name: "Gato Banana", img: "gatos/GatoBanana.png" },
-    "03": { name: "Gato Negro", img: "gatos/GatoNegro.png" },
-    "04": { name: "Gato Blanco", img: "gatos/GatoBlanco.png" },
-    "05": { name: "Gato Naranja", img: "gatos/GatoNaranja.png" },
-    "06": { name: "Gato Siames", img: "gatos/GatoSiames.png" },
-    "07": { name: "Gato Esmoking", img: "gatos/GatoEsmoking.png" },
-    "08": { 
-        name: "PERLI", 
-        img: "gatos/perli.png", 
-        // Perli tiene imágenes especiales
-        especial: { feliz: "gatos/perliFeliz.png", love_max: "gatos/PerliAmorMax.png" } 
-    },
-    "09": { 
-        name: "BOLLITO", 
-        img: "gatos/Bollito.png",
-        especial: { feliz: "gatos/BollitoFeliz.png" }
-    }
-};
+// --- IMÁGENES EXACTAS (Según tu lista) ---
+const IMAGENES = {
+    // Estados básicos
+    feliz: "emociones/GatoFeliz.gif",     // >= 50% afecto
+    triste_estado: "emociones/GatoTriste.png", // < 50% afecto (User pidió .gif, pero en lista archivos es .png, ajusta si es necesario)
+    muerto: "logros/LOGRO_GATO-RIP.png",
 
-// Rutas a las emociones genéricas
-const EMOCIONES = {
-    triste: "emociones/GatoTriste.png",
-    feliz: "emociones/GatoFeliz.gif",
-    love_max: "emociones/AmorMax.gif",
-    hate_max: "emociones/HateMax.gif",
-    alimentar: "emociones/Comida.gif",
-    alimentarMalo: "emociones/GatoComidaAsco.gif",
-    ignorar: "emociones/GatoIgnorado.gif",
-    asustar: "emociones/GatoAsustado.gif",
-    cepillar: "emociones/Peinado.gif", // Asegúrate de tener esta imagen o cambia el nombre
-    bañar: "emociones/GatoBañado.gif",
-    acariciar: "emociones/GatoAcariciado.gif",
-    caja: "emociones/GatoCaja.gif",
+    // Acciones
+    comida_ok: "emociones/gato-negro-comiendo.gif",
+    comida_asco: "emociones/GatoComidaAsco.gif",
+    
+    mimos_ok: "emociones/GatoAcariciado.gif",
+    mimos_bad: "emociones/HateMax.gif",
+    
     laser: "emociones/GatoLaser.gif",
-    esconder: "emociones/GatoEscondido.gif",
-    medicina: "emociones/GatoPastilla.gif",
-    medicinaBuena: "emociones/GatoMedicina.gif",
-    tumba: "emociones/tumba.png" // Asegurate de tener una imagen tumba
+    
+    caja: "emociones/GatoCaja.gif",
+    
+    bano_ok: "emociones/GatoBañado.gif",
+    bano_bad: "emociones/HateMax.gif",
+    
+    curar_ok: "emociones/GatoPastilla.gif",
+    curar_bad: "emociones/GatoMedicina.gif",
+    
+    ignorar: "emociones/GatoEsperando.gif",
+
+    // Nuevos
+    asustar: "emociones/GatoEscondido.gif", // Asumo esta imagen o usa HateMax
+    cepillar: "emociones/GatoAcariciado.gif" // Reutilizamos acariciado o añade una específica
 };
 
-// --- LÓGICA DE PROBABILIDADES ---
-function calcularInteraccion(accion, salud, afecto) {
-    let dSalud = 0;
-    let dAfecto = 0;
-    let emocion = 'feliz';
-    let texto = "";
-    const r = Math.random(); // 0.0 a 1.0
+// --- LÓGICA DE JUEGO ---
+function calcularInteraccion(accion, gato) {
+    let dSalud = 0, dAfecto = 0, img = IMAGENES.feliz, texto = "";
+    let r = Math.random(); 
+    let bonus = (gato.afecto > 80) ? 0.2 : 0; 
 
     switch(accion) {
         case 'alimentar':
-            if (r > 0.3) { // 70% Bueno
-                dSalud = 5; dAfecto = 5; emocion = 'feliz'; texto = "¡Qué rico! 🐟";
-            } else { 
-                dSalud = -5; dAfecto = -5; emocion = 'alimentarMalo'; texto = "¡Puaj! Esto sabe mal 🤢";
+            if (r < (0.3 - bonus)) {
+                dSalud = -5; dAfecto = -2; img = IMAGENES.comida_asco; texto = "¡Puaj! ¡Sabe mal! 🤢";
+            } else {
+                dSalud = 10; dAfecto = 5; img = IMAGENES.comida_ok; texto = "¡Qué rico! 🐟";
             }
             break;
+
         case 'acariciar':
-            if (afecto > 80) {
-                dAfecto = 5; emocion = 'love_max'; texto = "¡Te quiero mucho humano! ❤️";
-            } else if (r > 0.4) {
-                dAfecto = 10; emocion = 'acariciar'; texto = "Purrr purrr...";
+            if (gato.afecto < 25) { // Si te odia
+                dSalud = -2; dAfecto = -5; img = IMAGENES.mimos_bad; texto = "¡NO ME TOQUES! 🩸";
             } else {
-                dAfecto = -5; emocion = 'hate_max'; texto = "¡NO ME TOQUES! 😾";
+                dAfecto = 10; img = IMAGENES.mimos_ok; texto = "Purrrr... mimos.";
             }
             break;
+
         case 'jugarConLaser':
-            dAfecto = 15; dSalud = -2; emocion = 'laser'; texto = "¡Ven aquí puntito rojo!";
+            dSalud = -2; dAfecto = 15; img = IMAGENES.laser; texto = "¡Atrápalo! 🔴";
             break;
+
+        case 'caja':
+            dAfecto = 20; img = IMAGENES.caja; texto = "Si encajo, me siento. 📦";
+            break;
+
         case 'lavar':
-            if (r > 0.8) { // Raro que le guste
-                dSalud = 10; emocion = 'bañar'; texto = "Bueno... estoy limpio ✨";
+            if (r > 0.7) { 
+                dSalud = 15; img = IMAGENES.bano_ok; texto = "Estoy limpio ✨";
             } else {
-                dSalud = 5; dAfecto = -20; emocion = 'hate_max'; texto = "¡ODIO EL AGUA! 💦😡";
+                dAfecto = -20; img = IMAGENES.bano_bad; texto = "¡ODIO EL AGUA! 💦";
             }
             break;
-        case 'cepillar':
-            if (r > 0.5) {
-                dAfecto = 10; emocion = 'cepillar'; texto = "Qué suave...";
-            } else {
-                dAfecto = -5; emocion = 'hate_max'; texto = "¡Ay! ¡Cuidado con los tirones!";
-            }
-            break;
-        case 'ignorar':
-            dAfecto = -15; emocion = (r > 0.5) ? 'triste' : 'ignorar'; texto = "¿Hola? ¿Hay alguien ahí? 🥺";
-            break;
-        case 'darMedicamento':
-            if (salud < 100) {
+
+        case 'medicina': // Curar
+            if (gato.salud < 100) {
                 if (r > 0.4) {
-                    dSalud = 20; emocion = 'medicinaBuena'; texto = "Me siento mejor 💪";
+                     dSalud = 50; dAfecto = 5; img = IMAGENES.curar_ok; texto = "Me siento mejor (Pastilla).";
                 } else {
-                    dSalud = 0; dAfecto = -5; emocion = 'medicina'; texto = "¡Sabe horrible! *Escupe*";
+                     dSalud = 30; dAfecto = -5; img = IMAGENES.curar_bad; texto = "¡Sabe a rayos! (Jarabe).";
                 }
             } else {
-                dAfecto = -10; emocion = 'esconder'; texto = "¡No estoy enfermo, déjame!";
+                dAfecto = -5; img = IMAGENES.curar_bad; texto = "¡No estoy enfermo!";
             }
             break;
+
+        case 'ignorar':
+            dAfecto = -10; img = IMAGENES.ignorar; texto = "Esperando...";
+            break;
+
         case 'asustar':
-            dSalud = -5; dAfecto = -20; emocion = 'asustar'; texto = "¡AAAAHH! ¡Qué susto! 👻";
+            dSalud = -5; dAfecto = -15; img = IMAGENES.mimos_bad; texto = "¡AAAAH! 👻";
             break;
-        case 'darCaja': // Extra
-            dAfecto = 10; emocion = 'caja'; texto = "Si encajo, me siento 📦";
+
+        case 'cepillar':
+            dAfecto = 8; img = IMAGENES.mimos_ok; texto = "Qué suave...";
             break;
-        default:
-            texto = "...";
     }
-    return { dSalud, dAfecto, emocion, texto };
+    return { dSalud, dAfecto, img, texto };
 }
 
 // --- RUTAS ---
 
-// Login
+// 1. LOGIN
 app.get('/', (req, res) => res.render('login'));
 app.post('/login', (req, res) => {
     const { user, pass } = req.body;
     db.query('SELECT * FROM usuarios WHERE nombre = ? AND password_hash = ?', [user, pass], (err, results) => {
-        if (results.length > 0) {
-            req.session.userId = results[0].id;
-            req.session.userName = results[0].nombre;
+        if (results && results.length > 0) {
+            req.session.user = results[0];
             res.redirect('/juego');
-        } else {
-            res.redirect('/'); // Falló login
-        }
+        } else { res.redirect('/'); }
     });
 });
 
-// Registro
+// 2. INVITADO (NUEVA RUTA)
+app.post('/guest', (req, res) => {
+    req.session.user = null; // Asegurar que no hay usuario
+    // Crear gato default
+    req.session.gatoInvitado = { nombre: "Gato Invitado", salud: 100, afecto: 50, vivo: true };
+    res.redirect('/juego');
+});
+
+// 3. REGISTRO
 app.get('/registro', (req, res) => res.render('registro'));
 app.post('/registro', (req, res) => {
     const { user, pass } = req.body;
-    db.query('INSERT INTO usuarios (nombre, email, password_hash) VALUES (?, ?, ?)', 
-        [user, user+"@mail.com", pass], (err) => {
-        if (err) console.log(err);
+    db.query('INSERT INTO usuarios (nombre, email, password_hash) VALUES (?, ?, ?)', [user, user+"@mail.com", pass], () => {
         res.redirect('/');
     });
 });
+app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/'); });
 
-// Pantalla de Juego
+// 4. JUEGO
 app.get('/juego', (req, res) => {
-    if (!req.session.userId) return res.redirect('/');
+    
+    // --> MODO INVITADO
+    if (!req.session.user) {
+        const gatoInv = req.session.gatoInvitado;
+        if (!gatoInv) return res.redirect('/'); // Si entra directo sin botón, al login
 
-    // 1. Obtener gato
-    db.query('SELECT * FROM gatos WHERE user_id = ?', [req.session.userId], (err, rows) => {
-        const gato = rows[0];
-
-        // Si no tiene gato, renderizar vista de adopción (que está dentro de juego.ejs controlada por if)
-        if (!gato) return res.render('juego', { gato: null, user: req.session.userName });
-
-        // 2. Obtener logros desbloqueados
-        const sqlLogros = `
-            SELECT l.*, 
-            CASE WHEN lu.unlocked_at IS NOT NULL THEN 1 ELSE 0 END as tiene 
-            FROM logros l 
-            LEFT JOIN logros_usuario lu ON l.id = lu.logro_id AND lu.usuario_id = ?`;
+        // Determinar FOTO DE ESTADO (Top Left)
+        const fotoEstado = (gatoInv.afecto >= 50) ? IMAGENES.feliz : IMAGENES.triste_estado;
+        // La foto central por defecto
+        const fotoCentral = req.session.ultimaFoto || fotoEstado; 
         
-        db.query(sqlLogros, [req.session.userId], (err2, logros) => {
-            
-            // Lógica de imagen inicial
-            const datosTipo = TIPOS_GATO[gato.tipo_id] || TIPOS_GATO["01"];
-            let imagenUrl = datosTipo.img;
-            if (!gato.vivo) imagenUrl = EMOCIONES.tumba;
+        return res.render('juego', {
+            user: null,
+            gato: gatoInv,
+            historial: [],
+            logros: [],
+            imagen: gatoInv.vivo ? fotoCentral : IMAGENES.muerto,
+            imagenEstado: fotoEstado, // Variable nueva para el cuadro arriba izq
+            texto: req.session.ultimoTexto || "Modo Invitado"
+        });
+    }
 
-            res.render('juego', {
-                gato: gato,
-                user: req.session.userName,
-                imagen: imagenUrl,
-                texto: "¡Hola " + req.session.userName + "!",
-                logros: logros
+    // --> MODO USUARIO
+    const userId = req.session.user.id;
+    db.query('SELECT * FROM gatos WHERE user_id = ? AND vivo = 1', [userId], (err, gatos) => {
+        const gatoActual = gatos ? gatos[0] : null;
+
+        db.query('SELECT * FROM gatos WHERE user_id = ? AND vivo = 0 ORDER BY id DESC', [userId], (err2, historial) => {
+            const sqlLogros = `SELECT l.*, CASE WHEN lu.unlocked_at IS NOT NULL THEN 1 ELSE 0 END as tiene FROM logros l LEFT JOIN logros_usuario lu ON l.id = lu.logro_id AND lu.usuario_id = ?`;
+            
+            db.query(sqlLogros, [userId], (err3, logros) => {
+                if (err3) logros = [];
+
+                let imagenEstado = IMAGENES.feliz;
+                let imagenCentral = IMAGENES.feliz;
+                let textoMostrar = "Miau...";
+
+                if (gatoActual) {
+                    // Lógica del cuadro de estado
+                    imagenEstado = (gatoActual.afecto >= 50) ? IMAGENES.feliz : IMAGENES.triste_estado;
+                    // Si venimos de una interacción, usamos la foto de la interacción, si no, la del estado
+                    imagenCentral = req.session.ultimaFoto || imagenEstado;
+                    textoMostrar = req.session.ultimoTexto || "Miau...";
+                    
+                    // Limpiar sesión flash manual
+                    req.session.ultimaFoto = null;
+                    req.session.ultimoTexto = null;
+                } else {
+                    imagenCentral = null;
+                    textoMostrar = "";
+                }
+
+                res.render('juego', {
+                    user: req.session.user,
+                    gato: gatoActual,
+                    historial: historial || [],
+                    logros: logros || [],
+                    imagen: imagenCentral,
+                    imagenEstado: imagenEstado, // Nueva variable
+                    texto: textoMostrar
+                });
             });
         });
     });
 });
 
-// Acción de Botones
+// 5. INTERACTUAR
 app.post('/interactuar', (req, res) => {
-    if (!req.session.userId) return res.redirect('/');
     const { accion } = req.body;
 
-    db.query('SELECT * FROM gatos WHERE user_id = ?', [req.session.userId], (err, rows) => {
-        if (!rows[0]) return res.redirect('/juego');
+    // Helper para guardar resultado y redirigir
+    const finalizarInteraccion = (gato, resultado, vivo) => {
+        req.session.ultimaFoto = vivo ? resultado.img : IMAGENES.muerto;
+        req.session.ultimoTexto = vivo ? resultado.texto : "Ha muerto...";
+        res.redirect('/juego');
+    };
+
+    // Invitado
+    if (!req.session.user) {
+        let g = req.session.gatoInvitado;
+        if (!g || !g.vivo) return res.redirect('/juego');
+
+        const resInv = calcularInteraccion(accion, g);
+        g.salud = Math.min(100, Math.max(0, g.salud + resInv.dSalud));
+        g.afecto = Math.min(100, Math.max(0, g.afecto + resInv.dAfecto));
+        if (g.salud <= 0) { g.vivo = false; }
+        req.session.gatoInvitado = g;
+        finalizarInteraccion(g, resInv, g.vivo);
+        return;
+    }
+
+    // Usuario
+    db.query('SELECT * FROM gatos WHERE user_id = ? AND vivo = 1', [req.session.user.id], (err, rows) => {
+        if (!rows || !rows[0]) return res.redirect('/juego');
         let gato = rows[0];
 
-        if (!gato.vivo) return res.redirect('/juego'); // Si está muerto no hace nada
+        // Cheats Admin
+        if (req.session.user.rol === 'admin') {
+            if (accion === 'kill') gato.salud = 0;
+            if (accion === 'heal') { gato.salud = 100; gato.afecto = 100; }
+        }
 
-        // Calcular
-        const resultado = calcularInteraccion(accion, gato.salud, gato.afecto);
-        
-        // Limites
+        const resultado = calcularInteraccion(accion, gato);
         let nuevaSalud = Math.min(100, Math.max(0, gato.salud + resultado.dSalud));
         let nuevoAfecto = Math.min(100, Math.max(0, gato.afecto + resultado.dAfecto));
-        let vivo = nuevaSalud > 0;
+        let vivo = nuevaSalud > 0 ? 1 : 0;
+        let causa = vivo ? null : "Descuido";
 
-        // Determinar Imagen
-        let imgFinal = EMOCIONES[resultado.emocion] || TIPOS_GATO["01"].img;
-        const tipoGato = TIPOS_GATO[gato.tipo_id];
+        // Desbloquear Logros
+        if (nuevoAfecto >= 100) db.query("INSERT IGNORE INTO logros_usuario (usuario_id, logro_id) SELECT ?, id FROM logros WHERE clave_interna='love_max'", [req.session.user.id]);
+        if (vivo === 0) db.query("INSERT IGNORE INTO logros_usuario (usuario_id, logro_id) SELECT ?, id FROM logros WHERE clave_interna='rip'", [req.session.user.id]);
 
-        // ¿Es Perli/Bollito y tiene imagen especial?
-        if (tipoGato.especial && tipoGato.especial[resultado.emocion]) {
-            imgFinal = tipoGato.especial[resultado.emocion];
-        }
-        if (!vivo) imgFinal = EMOCIONES.tumba;
-
-        // Actualizar BD
-        db.query('UPDATE gatos SET salud=?, afecto=?, vivo=? WHERE id=?', 
-            [nuevaSalud, nuevoAfecto, vivo, gato.id], () => {
-                
-                // Recargar página con datos nuevos (Simulado pasando variables al render)
-                // Para simplificar, redirigimos a /juego pero guardamos el estado en sesión o 
-                // hacemos render directo. Haremos render directo para ver el resultado de la acción.
-                
-                const sqlLogros = `SELECT l.*, CASE WHEN lu.unlocked_at IS NOT NULL THEN 1 ELSE 0 END as tiene FROM logros l LEFT JOIN logros_usuario lu ON l.id = lu.logro_id AND lu.usuario_id = ?`;
-                db.query(sqlLogros, [req.session.userId], (err3, logros) => {
-                    res.render('juego', {
-                        gato: { ...gato, salud: nuevaSalud, afecto: nuevoAfecto, vivo },
-                        user: req.session.userName,
-                        imagen: imgFinal,
-                        texto: resultado.texto,
-                        logros: logros
-                    });
-                });
+        db.query('UPDATE gatos SET salud=?, afecto=?, vivo=?, causa_muerte=? WHERE id=?', 
+            [nuevaSalud, nuevoAfecto, vivo, causa, gato.id], () => {
+                finalizarInteraccion(gato, resultado, vivo);
         });
     });
 });
 
-// Adoptar
+// 6. ADOPTAR (CORREGIDO: Permite nombre siempre)
 app.post('/adoptar', (req, res) => {
-    if (!req.session.userId) return res.redirect('/');
-    const { nombre } = req.body;
-    
-    // Elegir tipo aleatorio
-    const keys = Object.keys(TIPOS_GATO);
-    const tipoId = keys[Math.floor(Math.random() * keys.length)];
+    const nombre = req.body.nombre || "Michi Nuevo";
 
-    // Borrar anterior y crear nuevo
-    db.query('DELETE FROM gatos WHERE user_id = ?', [req.session.userId], () => {
-        db.query('INSERT INTO gatos (user_id, nombre, tipo_id) VALUES (?, ?, ?)', 
-            [req.session.userId, nombre, tipoId], () => {
-            
-            // Check Logros de adopción
-            if (tipoId === '08') db.query("INSERT IGNORE INTO logros_usuario (usuario_id, logro_id) SELECT ?, id FROM logros WHERE clave='gatoPerli'", [req.session.userId]);
-            if (tipoId === '09') db.query("INSERT IGNORE INTO logros_usuario (usuario_id, logro_id) SELECT ?, id FROM logros WHERE clave='gatoBollito'", [req.session.userId]);
+    if (!req.session.user) {
+        req.session.gatoInvitado = { nombre: nombre, salud: 100, afecto: 50, vivo: true };
+        return res.redirect('/juego');
+    }
 
+    // Archivar gato anterior (vivo o muerto, lo marcamos como abandonado/muerto)
+    // Primero archivamos el que esté vivo
+    db.query('UPDATE gatos SET vivo = 0, causa_muerte = "Reemplazado" WHERE user_id = ? AND vivo = 1', [req.session.user.id], () => {
+        // Creamos el nuevo
+        db.query('INSERT INTO gatos (user_id, nombre) VALUES (?, ?)', [req.session.user.id, nombre], () => {
+            req.session.ultimaFoto = null; // Reset foto
             res.redirect('/juego');
         });
     });
 });
 
-app.listen(3001, () => console.log("😺 Servidor listo en http://localhost:3001"));
+app.listen(3001, () => console.log("😺 Server corriendo en http://localhost:3001"));

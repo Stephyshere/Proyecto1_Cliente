@@ -4,86 +4,136 @@
     <meta charset="UTF-8">
     <title>GatoGotchi</title>
     <link rel="stylesheet" href="/style.css">
-    <style>
-        /* CSS Rápido para Logros */
-        .logro { display: inline-block; width: 80px; margin: 5px; text-align: center; opacity: 0.3; filter: grayscale(100%); }
-        .logro.desbloqueado { opacity: 1; filter: grayscale(0%); border: 2px solid gold; border-radius: 5px;}
-        .logro img { width: 50px; height: 50px; }
-        .botones-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-        .btn-accion { padding: 10px 20px; cursor: pointer; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div id="contenedor-juego">
+<div class="layout-juego">
 
-    <% if (!gato) { %>
-        <div class="caja-aviso">
-            <h1>¡Bienvenido <%= user %>!</h1>
-            <p>No tienes gato. ¡Adopta uno ahora!</p>
-            <form action="/adoptar" method="POST">
-                <input type="text" name="nombre" placeholder="Nombre de tu gato..." required>
-                <button type="submit">🎲 Adoptar Gato Sorpresa</button>
-            </form>
-        </div>
-    <% } else { %>
-
-        <h1>💖 <%= gato.nombre %> 💖</h1>
-
-        <div id="visualizacion-gato">
-            <div id="dialogo-gato" class="caja-dialogo" style="background: white; padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 2px solid #333;">
-                <%= texto %>
-            </div>
-            
-            <img id="imagen-gato" src="/images/<%= imagen %>" style="max-height: 300px;">
+    <aside class="columna-lateral">
+        <div class="perfil-info">
+            <div class="avatar">👤</div>
+            <h3><%= user ? user.nombre : "Invitado" %></h3>
+            <% if (user && user.rol === 'admin') { %>
+                <div class="badge-admin">ADMIN</div>
+            <% } %>
         </div>
 
-        <% if (!gato.vivo) { %>
-            <div style="background: #ffcccc; padding: 20px; margin: 20px 0;">
-                <h2>☠️ TU GATO HA MUERTO ☠️</h2>
-                <form action="/adoptar" method="POST">
-                    <input type="text" name="nombre" placeholder="Nombre del nuevo gato..." required>
-                    <button type="submit">Intentarlo de nuevo</button>
-                </form>
-            </div>
-        <% } else { %>
+        <div class="historial-container">
+            <h4>😺 Historial</h4>
+            <% if (!user) { %>
+                <p class="nota-invitado">Regístrate para guardar tus gatos.</p>
+            <% } else { %>
+                <% if (gato && gato.vivo) { %>
+                    <div class="item-historial vivo">
+                        <strong><%= gato.nombre %></strong> <span>(Vivo)</span>
+                    </div>
+                <% } %>
+                <% if (historial && historial.length > 0) { %>
+                    <hr>
+                    <% historial.forEach(function(g) { %>
+                        <div class="item-historial muerto">
+                            <strong><%= g.nombre %></strong>
+                            <small><%= g.causa_muerte %></small>
+                        </div>
+                    <% }); %>
+                <% } %>
+            <% } %>
+        </div>
+
+        <div style="margin-top:auto">
+            <a href="<%= user ? '/logout' : '/' %>" class="btn btn-rojo">
+                <%= user ? 'Salir' : 'Entrar' %>
+            </a>
+        </div>
+    </aside>
+
+    <main class="columna-central">
+        <div class="consola-juego">
             
-            <div id="contenedor-estadisticas">
-                <label>Salud: <%= gato.salud %>%</label>
-                <progress value="<%= gato.salud %>" max="100"></progress>
-                <br>
-                <label>Afecto: <%= gato.afecto %>/100</label>
-                <progress value="<%= gato.afecto %>" max="100"></progress>
-            </div>
-
-            <div class="botones-grid">
-                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="alimentar"><button class="btn-accion">🍖 Alimentar</button></form>
-                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="acariciar"><button class="btn-accion">🤗 Acariciar</button></form>
-                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="jugarConLaser"><button class="btn-accion">🔴 Laser</button></form>
-                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="lavar"><button class="btn-accion">🛁 Lavar</button></form>
-                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="cepillar"><button class="btn-accion">💈 Cepillar</button></form>
-                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="ignorar"><button class="btn-accion">😴 Ignorar</button></form>
-                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="darMedicamento"><button class="btn-accion">💊 Medicina</button></form>
-                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="asustar"><button class="btn-accion">👻 Asustar</button></form>
-                <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="darCaja"><button class="btn-accion">📦 Caja</button></form>
-            </div>
-
-        <% } %>
-
-        <hr>
-        <h3>🏆 Logros</h3>
-        <div class="logros-container">
-            <% logros.forEach(function(l) { %>
-                <div class="logro <%= l.tiene ? 'desbloqueado' : '' %>" title="<%= l.descripcion %>">
-                    <img src="/images/logros/medalla.png" alt="Logro">
-                    <p style="font-size: 10px;"><%= l.titulo %></p>
+            <% if (!gato || (!gato.vivo && !imagen.includes('RIP') && !imagen.includes('LOGRO'))) { %>
+                <div class="pantalla-adopcion">
+                    <h1>¡Bienvenido!</h1>
+                    <img src="/images/emociones/GatoCaja.gif" style="width:150px">
+                    <form action="/adoptar" method="POST">
+                        <input type="text" name="nombre" placeholder="Nombre de tu michi..." required>
+                        <button class="btn-accion">Adoptar</button>
+                    </form>
                 </div>
-            <% }); %>
-        </div>
+            <% } else { %>
+                
+                <div style="width:100%; display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                    <% if(gato.vivo) { %>
+                        <div class="cuadro-estado">
+                            <img src="/images/<%= imagenEstado %>" alt="Estado">
+                        </div>
+                    <% } %>
+                    
+                    <h2 style="flex-grow:1; text-align:center;"><%= gato.nombre %></h2>
+                    <div style="width:50px;"></div> </div>
 
-    <% } %>
+                <div class="pantalla-visual">
+                    <div class="globo-texto"><%= texto %></div>
+                    <img src="/images/<%= imagen %>" class="img-gato-principal">
+                </div>
+
+                <% if (!gato.vivo) { %>
+                    <div class="aviso-muerte">
+                        <h3>☠️ HA MUERTO ☠️</h3>
+                        <form action="/adoptar" method="POST">
+                            <input type="text" name="nombre" placeholder="Nombre del nuevo gato..." required style="padding:10px; border-radius:10px; border:1px solid #ccc; width:70%; margin-bottom:10px;">
+                            <button class="btn-accion">Intentarlo de nuevo</button>
+                        </form>
+                    </div>
+                <% } else { %>
+                    <div class="stats-barras">
+                        <label>Salud <%= gato.salud %>%</label>
+                        <progress value="<%= gato.salud %>" max="100" class="prog-salud"></progress>
+                        <label>Afecto <%= gato.afecto %>%</label>
+                        <progress value="<%= gato.afecto %>" max="100" class="prog-afecto"></progress>
+                    </div>
+
+                    <div class="grid-acciones">
+                        <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="alimentar"><button class="btn-accion">🍖 Comer</button></form>
+                        <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="acariciar"><button class="btn-accion">🤗 Mimos</button></form>
+                        <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="jugarConLaser"><button class="btn-accion">🔴 Láser</button></form>
+                        <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="caja"><button class="btn-accion">📦 Caja</button></form>
+                        <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="lavar"><button class="btn-accion">🛁 Baño</button></form>
+                        <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="medicina"><button class="btn-accion">💊 Curar</button></form>
+                        
+                        <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="asustar"><button class="btn-accion">👻 Asustar</button></form>
+                        <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="cepillar"><button class="btn-accion">💈 Cepillar</button></form>
+                        
+                        <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="ignorar"><button class="btn-accion gris">😴 Ignorar</button></form>
+                        
+                        <% if (user && user.rol === 'admin') { %>
+                            <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="kill"><button class="btn-accion admin-kill">KILL</button></form>
+                            <form action="/interactuar" method="POST"><input type="hidden" name="accion" value="heal"><button class="btn-accion admin-heal">MAX</button></form>
+                        <% } %>
+                    </div>
+                <% } %>
+            <% } %>
+        </div>
+    </main>
+
+    <aside class="columna-lateral">
+        <h3 style="text-align:center;">🏆 Logros</h3>
+        <% if (!user) { %>
+            <p style="text-align:center; opacity:0.6;">Crea cuenta para ganar medallas.</p>
+        <% } else { %>
+            <div class="grid-logros">
+                <% logros.forEach(function(l) { %>
+                    <div class="logro-item <%= l.tiene ? 'desbloqueado' : 'bloqueado' %>">
+                        <img src="/images/logros/<%= l.icon_url %>">
+                        <div class="tooltip">
+                            <strong><%= l.title %></strong><br><%= l.description %>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>
+    </aside>
 
 </div>
-
 </body>
 </html>

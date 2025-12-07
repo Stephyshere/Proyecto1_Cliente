@@ -6,29 +6,15 @@
     <title>Login GatoGotchi</title>
     <link rel="stylesheet" href="/index.css">
     <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
-    
     <style>
-        /* Estilos extra para la lluvia de gatitos */
-        .spawned-cat {
-            position: absolute;
-            pointer-events: none;
-            font-size: 2rem;
-            z-index: 10000; /* Por encima de todo */
-            animation: floatUp 1s ease-out forwards;
-        }
-
-        @keyframes floatUp {
-            0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
-            100% { transform: translateY(-100px) rotate(20deg) scale(1.5); opacity: 0; }
-        }
+        .spawned-cat { position: absolute; pointer-events: none; font-size: 2rem; z-index: 10000; animation: floatUp 1s ease-out forwards; }
+        @keyframes floatUp { 0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; } 100% { transform: translateY(-100px) rotate(20deg) scale(1.5); opacity: 0; } }
     </style>
 </head>
 <body>
 
     <div class="login-card">
-        <div class="avatar-container">
-            🐱
-        </div>
+        <div class="avatar-container">🐱</div>
         <h1>GatoGotchi</h1>
         <p class="subtitle">¡Bienvenido de nuevo, humano!</p>
 
@@ -48,7 +34,9 @@
 
         <div class="separator">- o -</div>
 
-        <button class="btn btn-guest" onclick="crearEfecto(event)">Acceso Rápido</button>
+        <form action="/guest" method="POST" style="width:100%;">
+            <button type="submit" class="btn btn-guest" onclick="crearEfecto(event)">Acceso Rápido (Invitado)</button>
+        </form>
 
         <div class="register-link">
             ¿No tienes cuenta? <a href="/registro">Registrarse</a>
@@ -57,27 +45,14 @@
 
     <script>
         const emojis = ['🐱', '😸', '😹', '😻', '😼', '🧶', '🐟', '🐾', '🥛', '🐭', '💖'];
-
-        document.addEventListener('click', (e) => {
-            if(e.target.tagName === 'INPUT') return;
-
-            crearEfecto(e);
-        });
-
         function crearEfecto(e) {
-
             const el = document.createElement('div');
             el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
             el.className = 'spawned-cat';
-
             el.style.left = (e.pageX - 20) + 'px';
             el.style.top = (e.pageY - 20) + 'px';
-
             document.body.appendChild(el);
-
-            setTimeout(() => {
-                el.remove();
-            }, 1000);
+            setTimeout(() => { el.remove(); }, 1000);
         }
     </script>
 </body>

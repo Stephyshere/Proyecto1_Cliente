@@ -287,3 +287,76 @@ progress {
     text-align: center;
     font-weight: bold;
 }
+
+/* --- RESPONSIVE DESIGN --- */
+
+@media (max-width: 900px) {
+
+    /* Permitir scroll en móviles */
+    body {
+        overflow-y: auto;
+        height: auto;
+        padding: 10px 0;
+        background-size: cover;
+    }
+
+    /* Cambiar layout a columna única */
+    .layout-juego {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        width: 95%;
+        max-width: 600px;
+        /* Limitar ancho en tablets/móviles grandes */
+        gap: 15px;
+    }
+
+    /* Reordenar columnas: Central (juego) primero, luego Perfil, luego Logros */
+    .columna-lateral {
+        order: 2;
+        /* Poner laterales abajo */
+        height: auto;
+        max-height: 400px;
+        /* Limitar altura si tienen scroll interno */
+    }
+
+    .columna-lateral:first-of-type {
+        /* Esta es la de perfil */
+        order: 2;
+    }
+
+    .columna-lateral:last-of-type {
+        /* Esta es la de logros */
+        order: 3;
+    }
+
+    .columna-central {
+        order: 1;
+        /* Juego primero */
+        height: auto;
+    }
+
+    .consola-juego {
+        height: auto;
+        min-height: 500px;
+        /* Altura mínima para que no se aplaste */
+    }
+
+    .pantalla-visual {
+        min-height: 300px;
+        /* Asegurar espacio para el gato */
+    }
+}
+
+@media (max-width: 480px) {
+
+    /* Ajustes para móviles pequeños */
+    .img-gato-principal {
+        max-height: 200px;
+    }
+
+    .grid-acciones {
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 columnas de botones */
+    }
+}

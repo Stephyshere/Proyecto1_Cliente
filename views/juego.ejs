@@ -26,14 +26,14 @@
             <% } else { %>
                 <% if (gato && gato.vivo) { %>
                     <div class="item-historial vivo">
-                        <strong><%= gato.nombre %></strong> <span>(Vivo)</span>
+                        <strong><%= gato.nombreVis %></strong> <span>(Vivo)</span>
                     </div>
                 <% } %>
                 <% if (historial && historial.length > 0) { %>
                     <hr>
                     <% historial.forEach(function(g) { %>
                         <div class="item-historial muerto">
-                            <strong><%= g.nombre %></strong>
+                            <strong><%= g.nombreVis %></strong>
                             <small><%= g.causa_muerte %></small>
                         </div>
                     <% }); %>
@@ -54,7 +54,8 @@
             <% if (!gato || (!gato.vivo && !imagen.includes('RIP') && !imagen.includes('LOGRO'))) { %>
                 <div class="pantalla-adopcion">
                     <h1>¡Bienvenido!</h1>
-                    <img src="/images/emociones/GatoCaja.gif" style="width:150px">
+                    <img src="/images/emociones/GatoMudanza.gif" style="width:150px">
+                    
                     <form action="/adoptar" method="POST">
                         <input type="text" name="nombre" placeholder="Nombre de tu michi..." required>
                         <button class="btn-accion">Adoptar</button>
@@ -69,8 +70,9 @@
                         </div>
                     <% } %>
                     
-                    <h2 style="flex-grow:1; text-align:center;"><%= gato.nombre %></h2>
-                    <div style="width:50px;"></div> </div>
+                    <h2 style="flex-grow:1; text-align:center;"><%= gato.nombreVis %></h2>
+                    <div style="width:50px;"></div> 
+                </div>
 
                 <div class="pantalla-visual">
                     <div class="globo-texto"><%= texto %></div>
@@ -81,7 +83,7 @@
                     <div class="aviso-muerte">
                         <h3>☠️ HA MUERTO ☠️</h3>
                         <form action="/adoptar" method="POST">
-                            <input type="text" name="nombre" placeholder="Nombre del nuevo gato..." required style="padding:10px; border-radius:10px; border:1px solid #ccc; width:70%; margin-bottom:10px;">
+                             <input type="text" name="nombre" placeholder="Nombre del nuevo gato..." required style="padding:10px; border-radius:10px; border:1px solid #ccc; width:70%; margin-bottom:10px;">
                             <button class="btn-accion">Intentarlo de nuevo</button>
                         </form>
                     </div>
